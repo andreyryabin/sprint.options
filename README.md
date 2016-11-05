@@ -1,9 +1,10 @@
 # README #
 
 Скачайте код модуля через composer
-composer require andreyryabin/sprint.options
-
 -------------------------
+
+**composer require andreyryabin/sprint.options**
+
 ```
 {
   "extra": {

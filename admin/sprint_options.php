@@ -1,7 +1,7 @@
 <?php
 
 /** @noinspection PhpIncludeInspection */
-require_once($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/prolog_admin_before.php");
+require_once $_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/prolog_admin_before.php";
 
 \CModule::IncludeModule("sprint.options");
 
@@ -15,8 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 /** @noinspection PhpIncludeInspection */
-require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/prolog_admin_after.php");
-
+require $_SERVER["DOCUMENT_ROOT"] . "/bitrix/modules/main/include/prolog_admin_after.php";
 
 $optionsConfig = \Sprint\Options\Module::getOptionsConfig();
 if ($_SERVER['REQUEST_METHOD'] == "POST" && check_bitrix_sessid()) {
@@ -51,7 +50,7 @@ foreach ($optionsConfig as $name => $aOption) {
         $tabIndex = count($tabControlTabs) + 1;
         $tabOptionsTabs[$tabName] = array();
         $tabControlTabs[] = array(
-            'DIV' => 'tab' . $tabIndex, 'TAB' => $tabName, 'TITLE' => $tabName
+            'DIV' => 'tab' . $tabIndex, 'TAB' => $tabName, 'TITLE' => $tabName,
         );
     }
 
@@ -61,31 +60,38 @@ foreach ($optionsConfig as $name => $aOption) {
 
 <? $tabControl1 = new CAdminTabControl("tabControl2", $tabControlTabs); ?>
 
-<form method="post" action="<? echo $APPLICATION->GetCurPage() ?>?mid_menu=1&mid=<?= urlencode($module_id) ?>&lang=<?= LANGUAGE_ID ?>">
+<form method="post" action="<? echo $APPLICATION->GetCurPage() ?>?mid_menu=1&mid=<?=urlencode($module_id);?>&lang=<?=LANGUAGE_ID;?>">
     <? $tabControl1->Begin(); ?>
     <? foreach ($tabOptionsTabs as $tabOptions): ?>
         <? $tabControl1->BeginNextTab(); ?>
         <? foreach ($tabOptions as $aOption):?>
             <p>
-                <?= $aOption['TITLE'] ?> <br/>
-                <? if (!empty($aOption['OPTIONS'])):  ?>
-                    <select style="<?= $aOption['STYLE'] ?>" name="<?= $aOption['NAME'] ?>">
+                <?=$aOption['TITLE'];?> <br/>
+                <? if ($aOption['MULTI'] == 'Y'):  ?>
+                    <? foreach($aOption['VALUE'] as $value): ?>
+                        <p><input style="<?=$aOption['STYLE'];?>" type="text" value="<?=$value;?>" name="<?=$aOption['NAME'];?>[]"/></p>
+                    <? endforeach;?>
+                    <? for($i = 0; $i < 3; $i++): ?>
+                        <p><input style="<?=$aOption['STYLE'];?>" type="text" value="" name="<?=$aOption['NAME'];?>[]"/></p>
+                    <? endfor; ?>
+                <? elseif (!empty($aOption['OPTIONS'])):  ?>
+                    <select style="<?=$aOption['STYLE'];?>" name="<?=$aOption['NAME'];?>">
                         <? foreach ($aOption['OPTIONS'] as $optVal => $optText): ?>
-                            <option <? if ($aOption['VALUE'] == $optVal): ?>selected="selected"<? endif; ?>value="<?= $optVal ?>"><?= $optText ?></option>
+                            <option <? if ($aOption['VALUE'] == $optVal): ?>selected="selected"<? endif; ?>value="<?=$optVal;?>"><?=$optText;?></option>
                         <? endforeach ?>
                     </select>
                 <? elseif (!empty($aOption['HEIGHT'])): ?>
-                    <textarea style="<?= $aOption['STYLE'] ?>" name="<?= $aOption['NAME'] ?>"><?=$aOption['VALUE']?></textarea>
+                    <textarea style="<?=$aOption['STYLE'];?>" name="<?=$aOption['NAME'];?>"><?=$aOption['VALUE'];?></textarea>
                 <? else: ?>
-                    <input style="<?= $aOption['STYLE'] ?>" type="text" value="<?=$aOption['VALUE']?>" name="<?= $aOption['NAME'] ?>"/>
+                    <input style="<?=$aOption['STYLE'];?>" type="text" value="<?=$aOption['VALUE'];?>" name="<?=$aOption['NAME'];?>"/>
                 <? endif ?>
             </p>
         <? endforeach ?>
     <? endforeach ?>
     <? $tabControl1->Buttons(); ?>
-    <input class="adm-btn-green" type="submit" name="opts_save" value="<?=GetMessage('SPRINT_OPTIONS_SAVE_BTN')?>">
-    <input type="submit" class="adm-btn" name="opts_reset" value="<?=GetMessage('SPRINT_OPTIONS_RESET_BTN')?>">
-    <?= bitrix_sessid_post(); ?>
+    <input class="adm-btn-green" type="submit" name="opts_save" value="<?=GetMessage('SPRINT_OPTIONS_SAVE_BTN');?>">
+    <input type="submit" class="adm-btn" name="opts_reset" value="<?=GetMessage('SPRINT_OPTIONS_RESET_BTN');?>">
+    <?=bitrix_sessid_post();?>
 </form>
 
 <? $tabControl1->End(); ?>

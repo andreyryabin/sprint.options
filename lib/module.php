@@ -2,12 +2,12 @@
 
 namespace Sprint\Options;
 
+use COption;
+
 class Module
 {
-
     protected static $modulename = 'sprint.options';
-
-    protected static $configCache = array();
+    protected static $configCache = [];
 
     protected static function getDocRoot()
     {
@@ -34,7 +34,7 @@ class Module
 
     public static function getDbOption($name, $default = '')
     {
-        $val = \COption::GetOptionString(self::$modulename, $name, null);
+        $val = COption::GetOptionString(self::$modulename, $name, null);
 
         if (is_null($val)) {
             $opts = self::getOptionsConfig();
@@ -60,12 +60,12 @@ class Module
             return [];
         }
 
-        return (array) unserialize($value);
+        return (array)unserialize($value);
     }
 
     public static function packValue($value)
     {
-        $value = array_filter((array) $value);
+        $value = array_filter((array)$value);
         return serialize($value);
     }
 
@@ -75,8 +75,8 @@ class Module
             $value = static::packValue($value);
         }
 
-        if ($value != \COption::GetOptionString(self::$modulename, $name, '')) {
-            \COption::SetOptionString(self::$modulename, $name, $value);
+        if ($value != COption::GetOptionString(self::$modulename, $name, '')) {
+            COption::SetOptionString(self::$modulename, $name, $value);
         }
     }
 
@@ -84,7 +84,7 @@ class Module
     {
         $options = self::getOptionsConfig();
         foreach ($options as $name => $opt) {
-            \COption::RemoveOption(self::$modulename, $name);
+            COption::RemoveOption(self::$modulename, $name);
         }
     }
 
@@ -94,7 +94,7 @@ class Module
             $file = self::getPhpInterfaceDir() . '/sprint.options.php';
             if (is_file($file)) {
                 self::$configCache = include $file;
-                self::$configCache = (self::$configCache && is_array(self::$configCache)) ? self::$configCache : array();
+                self::$configCache = (self::$configCache && is_array(self::$configCache)) ? self::$configCache : [];
             }
         }
         return self::$configCache;

@@ -2,19 +2,23 @@
 
 namespace Sprint\Options;
 
-use COption;
+use Sprint\Options\Builder\Builder;
+use Sprint\Options\Exception\OptionNotFoundException;
 
 class Module
 {
     protected static $modulename = 'sprint.options';
-    protected static $configCache = [];
+    /**
+     * @var Builder
+     */
+    protected static $configBuilder;
 
-    protected static function getDocRoot()
+    protected static function getDocRoot(): string
     {
         return rtrim($_SERVER['DOCUMENT_ROOT'], DIRECTORY_SEPARATOR);
     }
 
-    public static function getPhpInterfaceDir()
+    public static function getPhpInterfaceDir(): string
     {
         if (is_dir(self::getDocRoot() . '/local/php_interface')) {
             return self::getDocRoot() . '/local/php_interface';
@@ -23,7 +27,7 @@ class Module
         }
     }
 
-    public static function getModuleDir()
+    public static function getModuleDir(): string
     {
         if (is_file(self::getDocRoot() . '/local/modules/' . self::$modulename . '/include.php')) {
             return self::getDocRoot() . '/local/modules/' . self::$modulename;
@@ -32,71 +36,44 @@ class Module
         }
     }
 
-    public static function getDbOption($name, $default = '')
+    public static function getDbOption(string $name, $default = '')
     {
-        $val = COption::GetOptionString(self::$modulename, $name, null);
-
-        if (is_null($val)) {
-            $opts = self::getOptionsConfig();
-            $val = isset($opts[$name]) ? $opts[$name]['DEFAULT'] : $default;
-        }
-
-        if (static::isMulti($name)) {
-            $val = static::getMultiValue($val);
-        }
-
-        return $val;
-    }
-
-    public static function isMulti($name)
-    {
-        $opts = self::getOptionsConfig();
-        return $opts[$name]['MULTI'] == 'Y';
-    }
-
-    public static function getMultiValue($value)
-    {
-        if (empty($value)) {
-            return [];
-        }
-
-        return (array)unserialize($value);
-    }
-
-    public static function packValue($value)
-    {
-        $value = array_filter((array)$value);
-        return serialize($value);
-    }
-
-    public static function setDbOption($name, $value)
-    {
-        if (static::isMulti($name)) {
-            $value = static::packValue($value);
-        }
-
-        if ($value != COption::GetOptionString(self::$modulename, $name, '')) {
-            COption::SetOptionString(self::$modulename, $name, $value);
+        try {
+            return self::getConfigBuilder()->getOption($name)->getValue();
+        } catch (OptionNotFoundException $e) {
+            return $default;
         }
     }
 
-    public static function resetDbOptions()
+    public static function setDbOption(string $name, $value)
     {
-        $options = self::getOptionsConfig();
-        foreach ($options as $name => $opt) {
-            COption::RemoveOption(self::$modulename, $name);
+        try {
+            self::getConfigBuilder()->getOption($name)->setValue($value);
+        } catch (OptionNotFoundException $e) {
         }
     }
 
-    public static function getOptionsConfig()
+    public static function getConfigBuilder(): Builder
     {
-        if (empty(self::$configCache)) {
-            $file = self::getPhpInterfaceDir() . '/sprint.options.php';
-            if (is_file($file)) {
-                self::$configCache = include $file;
-                self::$configCache = (self::$configCache && is_array(self::$configCache)) ? self::$configCache : [];
+        if (!is_null(self::$configBuilder)) {
+            return self::$configBuilder;
+        }
+
+        self::$configBuilder = new Builder();
+
+        $file = self::getPhpInterfaceDir() . '/sprint.options.php';
+        if (is_file($file)) {
+            $builder = include $file;
+
+            if ($builder instanceof Builder) {
+                self::$configBuilder = $builder;
+            } elseif (is_array($builder)) {
+                foreach ($builder as $name => $params) {
+                    self::$configBuilder->addOption($name, $params);
+                }
             }
         }
-        return self::$configCache;
+
+        return self::$configBuilder;
     }
 }

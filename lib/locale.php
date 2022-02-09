@@ -4,33 +4,33 @@ namespace Sprint\Options;
 
 class Locale
 {
-    public static function isWin1251()
+    public static function isWin1251(): bool
     {
-        return (defined('BX_UTF') && BX_UTF === true) ? 0 : 1;
+        return !(defined('BX_UTF') && BX_UTF === true);
     }
 
-    public static function convertToWin1251IfNeed($msg)
+    public static function convertToWin1251IfNeed(string $msg): string
     {
-        if (self::isWin1251() && self::detectUtf8($msg)) {
-            $msg = iconv('utf-8', 'windows-1251//IGNORE', $msg);
+        if ($msg && self::isWin1251() && self::detectUtf8($msg)) {
+            $msg = (string)iconv('utf-8', 'windows-1251//IGNORE', $msg);
         }
         return $msg;
     }
 
-    public static function convertToUtf8IfNeed($msg)
+    public static function convertToUtf8IfNeed(string $msg): string
     {
-        if (self::isWin1251() && !self::detectUtf8($msg)) {
-            $msg = iconv('windows-1251', 'utf-8//IGNORE', $msg);
+        if ($msg && self::isWin1251() && !self::detectUtf8($msg)) {
+            $msg = (string)iconv('windows-1251', 'utf-8//IGNORE', $msg);
         }
         return $msg;
     }
 
-    protected static function detectUtf8($msg)
+    protected static function detectUtf8(string $msg): bool
     {
-        return (md5($msg) == md5(iconv('utf-8', 'utf-8', $msg))) ? 1 : 0;
+        return (md5($msg) == md5(iconv('utf-8', 'utf-8', $msg)));
     }
 
-    public static function loadLocale($loc)
+    public static function loadLocale(array $loc)
     {
         global $MESS;
         foreach ($loc as $key => $msg) {

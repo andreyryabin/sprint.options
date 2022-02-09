@@ -1,6 +1,8 @@
 <?php
 global $APPLICATION;
 
+use Sprint\Options\Module;
+
 if (!CModule::IncludeModule('sprint.options')) {
     return false;
 }
@@ -9,22 +11,27 @@ if ($APPLICATION->GetGroupRight('sprint.options') == 'D') {
     return false;
 }
 
-include(__DIR__ . '/../locale/ru.php');
+$builder = Module::getConfigBuilder();
+
+$items = [];
+foreach ($builder->getPages() as $index => $page) {
+    $items[] = [
+        "text" => $page->getTitle(),
+        "url"  => "sprint_options.php?lang=" . LANGUAGE_ID . "&showpage=" . ($index + 1),
+    ];
+}
 
 $aMenu = [
     "parent_menu" => "global_menu_content",
     "section"     => "Sprint",
-    "sort"        => 50,
-    "text"        => GetMessage('SPRINT_OPTIONS_MENU_ITEM'),
+    "sort"        => $builder->getSort(),
+    "text"        => $builder->getTitle(),
     "icon"        => "sys_menu_icon",
     "page_icon"   => "sys_page_icon",
     "items_id"    => "sprint_options",
-    "items"       => [
-        [
-            "text" => GetMessage('SPRINT_OPTIONS_MENU_ITEM'),
-            "url"  => "sprint_options.php?lang=" . LANGUAGE_ID,
-        ],
-
+    "items"       => $items,
+    "more_url"    => [
+        "sprint_options.php?lang=" . LANGUAGE_ID,
     ],
 ];
 

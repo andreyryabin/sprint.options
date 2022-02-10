@@ -22,7 +22,7 @@ foreach ($builder->getPages() as $index => $page) {
 }
 
 $aMenu = [
-    "parent_menu" => "global_menu_content",
+    "parent_menu" => $builder->getParentMenu(),
     "section"     => "Sprint",
     "sort"        => $builder->getSort(),
     "text"        => $builder->getTitle(),

@@ -2,6 +2,9 @@
 
 namespace Sprint\Options\Builder;
 
+use Sprint\Options\Custom\SelectOption;
+use Sprint\Options\Custom\StringOption;
+use Sprint\Options\Custom\TextareaOption;
 use Sprint\Options\Exception\OptionNotFoundException;
 use Sprint\Options\Exception\PageNotFoundException;
 
@@ -10,12 +13,12 @@ class Builder
     /**
      * @var Page[]
      */
-    private $pages = [];
+    private array $pages = [];
     /**
      * @var Option[]
      */
-    private $options = [];
-    private $params;
+    private array $options = [];
+    private array $params;
 
     public function __construct(array $params = [])
     {
@@ -23,6 +26,7 @@ class Builder
             'TITLE'       => GetMessage('SPRINT_OPTIONS_DEFAULT_TITLE'),
             'PARENT_MENU' => 'global_menu_content',
             'SORT'        => 50,
+            'ICON'        => 'sys_menu_icon',
         ], $params);
     }
 
@@ -38,10 +42,34 @@ class Builder
         return $this;
     }
 
+    /**
+     * @param string $name
+     * @param array  $params
+     *
+     * @return $this
+     */
     public function addOption(string $name, array $params = []): Builder
     {
         if (!isset($this->options[$name])) {
-            $this->options[$name] = new Option($name, $params);
+            if (isset($params['OPTIONS'])) {
+                $this->options[$name] = (new SelectOption($name))
+                    ->setOptions($params['OPTIONS'])
+                    ->setWidth($params['WIDTH'] ?? '')
+                    ->setTitle($params['TITLE'] ?? $name)
+                    ->setDefault($params['DEFAULT'] ?? '');
+            } elseif (isset($params['HEIGHT'])) {
+                $this->options[$name] = (new TextareaOption($name))
+                    ->setHeight($params['HEIGHT'])
+                    ->setWidth($params['WIDTH'] ?? '')
+                    ->setTitle($params['TITLE'] ?? $name)
+                    ->setDefault($params['DEFAULT'] ?? '');
+            } else {
+                $this->options[$name] = (new StringOption($name))
+                    ->setMulty($params['MULTI'] == 'Y')
+                    ->setWidth($params['WIDTH'] ?? '')
+                    ->setTitle($params['TITLE'] ?? $name)
+                    ->setDefault($params['DEFAULT'] ?? '');
+            }
             if (!empty($params['TAB'])) {
                 $this->getLastPage()->getTabByTitle($params['TAB'])->addField($name);
             } else {
@@ -51,7 +79,18 @@ class Builder
         return $this;
     }
 
-    public function getFirstPage()
+    public function addCustom(Option $option): Builder
+    {
+        $name = $option->getName();
+
+        $this->options[$name] = $option;
+
+        $this->getLastPage()->getLastTab()->addField($name);
+
+        return $this;
+    }
+
+    public function getFirstPage(): Page
     {
         if (empty($this->pages)) {
             $this->addPage(GetMessage('SPRINT_OPTIONS_DEFAULT_PAGE_TITLE'));
@@ -60,7 +99,7 @@ class Builder
         return reset($this->pages);
     }
 
-    public function getLastPage()
+    public function getLastPage(): Page
     {
         if (empty($this->pages)) {
             $this->addPage(GetMessage('SPRINT_OPTIONS_DEFAULT_PAGE_TITLE'));
@@ -110,11 +149,19 @@ class Builder
         return $this;
     }
 
+    public function setIcon(string $icon): Builder
+    {
+        $this->params['ICON'] = $icon;
+        return $this;
+    }
+
+    public function getIcon()
+    {
+        return $this->params['ICON'];
+    }
+
     /**
-     * @param string $name
-     *
      * @throws OptionNotFoundException
-     * @return Option
      */
     public function getOption(string $name): Option
     {
@@ -125,10 +172,7 @@ class Builder
     }
 
     /**
-     * @param int $id
-     *
      * @throws PageNotFoundException
-     * @return Page
      */
     public function getPage(int $id): Page
     {

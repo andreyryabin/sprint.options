@@ -38,28 +38,16 @@ $tabControl1 = new CAdminTabControl("tabControl2", $builderPage->getTabControl()
     <?php foreach ($builderPage->getTabs() as $tab) { ?>
         <?php $tabControl1->BeginNextTab(); ?>
         <?php foreach ($tab->getFields() as $optionName) {
-            $option = $builder->getOption($optionName); ?>
-            <div style="margin-bottom: 10px">
-                <?= $option->getTitle() ?> <br/>
-                <?php if ($option->isMulti()) { ?>
-                    <?php foreach ($option->getValue() as $value) { ?>
-                        <p><input style="<?= $option->getStyle() ?>" type="text" value="<?= $value; ?>" name="<?= $option->getName(); ?>[]"/></p>
-                    <?php } ?>
-                    <?php for ($i = 0; $i < 3; $i++) { ?>
-                        <p><input style="<?= $option->getStyle(); ?>" type="text" value="" name="<?= $option->getName(); ?>[]"/></p>
-                    <?php } ?>
-                <?php } elseif (!empty($option->getOptions())) { ?>
-                    <select style="<?= $option->getStyle(); ?>" name="<?= $option->getName(); ?>">
-                        <?php foreach ($option->getOptions() as $optVal => $optText) { ?>
-                            <option <?php if ($option->getValue() == $optVal){ ?>selected="selected" <?php } ?>value="<?= $optVal; ?>"><?= $optText; ?></option>
-                        <?php } ?>
-                    </select>
-                <?php } elseif (!empty($option->getHeight())) { ?>
-                    <textarea style="<?= $option->getStyle(); ?>" name="<?= $option->getName(); ?>"><?= $option->getValue(); ?></textarea>
-                <?php } else { ?>
-                    <input style="<?= $option->getStyle(); ?>" type="text" value="<?= $option->getValue(); ?>" name="<?= $option->getName(); ?>"/>
-                <?php } ?>
-            </div>
+            $option = $builder->getOption($optionName);
+            ?>
+            <tr id="tr_<?= $option->getName() ?>">
+                <td class="adm-detail-content-cell-l" style="width: 40%">
+                    <?= $option->getTitle(); ?>:
+                </td>
+                <td class="adm-detail-content-cell-r" style="width: 60%">
+                    <?= $option->render(); ?>
+                </td>
+            </tr>
         <?php } ?>
     <?php } ?>
     <?php $tabControl1->Buttons(); ?>

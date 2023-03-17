@@ -46,9 +46,10 @@ class Module
         try {
             self::$valuesCache[$name] = self::getConfigBuilder()->getOptionValue($name);
         } catch (OptionNotFoundException $e) {
+            self::$valuesCache[$name] = $default;
         }
 
-        return $default;
+        return self::$valuesCache[$name];
     }
 
     public static function getConfigBuilder(): Builder

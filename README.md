@@ -40,13 +40,13 @@ return (new Builder)
     ->setSort(60)
     ->addPage('Страница 1')
     ->addTab('О компании')
-    ->addCustom(
+    ->addCustomOption(
         (new StringOption('EMAIL'))
             ->setTitle('Email компании')
             ->setDefault('about@example.com')
             ->setWidth('400')
     )
-    ->addCustom(
+    ->addCustomOption(
         (new TextareaOption('OFFICE'))
             ->setTitle('Адрес офиса')
             ->setDefault('Адрес офиса')
@@ -54,7 +54,7 @@ return (new Builder)
             ->setHeight('100')
     )
     ->addTab('Общие')
-    ->addCustom(
+    ->addCustomOption(
         (new SelectOption('SELECT1'))
             ->setTitle('Значение из списка')
             ->setDefault('var2')
@@ -68,12 +68,12 @@ return (new Builder)
     )
     ->addPage('Страница 2')
     ->addTab('Таб 1')
-    ->addCustom(
+    ->addCustomOption(
         (new FileOption('PICTURE'))
             ->setTitle('Фото офиса')
             ->setAllowImages(1)
     )
-    ->addCustom(
+    ->addCustomOption(
         (new FileOption('FILES'))
             ->setTitle('Документы')
             ->setAllowFiles(0)

@@ -7,21 +7,18 @@ class Page
     /**
      * @var Tab[]
      */
-    private $tabs = [];
-    private $params;
+    private array  $tabs  = [];
+    private string $title = 'page';
 
-    public function __construct(string $title, array $params)
+    public function setTitle(string $title): Page
     {
-        $this->params = array_merge([
-            'TITLE' => '',
-        ], $params);
-
-        $this->params['TITLE'] = $title;
+        $this->title = $title;
+        return $this;
     }
 
     public function getTitle(): string
     {
-        return $this->params['TITLE'];
+        return $this->title;
     }
 
     /**
@@ -34,7 +31,32 @@ class Page
 
     public function addTab(string $title, array $params = []): Page
     {
-        $this->tabs[] = new Tab($title, $params);
+        $this->tabs[] = (new Tab())
+            ->setTitle($title)
+            ->setDescription($params['DESCRIPTION'] ?? '');
+        return $this;
+    }
+
+    public function addCustomTab(Tab $tab): Page
+    {
+        $this->tabs[] = $tab;
+        return $this;
+    }
+
+    public function addOption(string $name, array $params = []): Page
+    {
+        if (!empty($params['TAB'])) {
+            $this->getTabByTitle($params['TAB'])->addOption($name, $params);
+        } else {
+            $this->getLastTab()->addOption($name, $params);
+        }
+        return $this;
+    }
+
+    public function addCustomOption(Option $option): Page
+    {
+        $this->getLastTab()->addCustomOption($option);
+
         return $this;
     }
 

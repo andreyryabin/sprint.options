@@ -3,13 +3,13 @@
 namespace Sprint\Options\Builder;
 
 use COption;
+use Sprint\Options\Module;
 
 abstract class Option
 {
     private string $name;
-    private string $title      = '';
+    private string $title = '';
     private        $default;
-    private        $modulename = 'sprint.options';
 
     public function __construct(string $name)
     {
@@ -48,7 +48,7 @@ abstract class Option
     public function getValue()
     {
         return COption::GetOptionString(
-            $this->getModuleName(),
+            Module::getModuleName(),
             $this->getName(),
             $this->getDefault()
         );
@@ -57,7 +57,7 @@ abstract class Option
     public function setValue($value)
     {
         COption::SetOptionString(
-            $this->getModuleName(),
+            Module::getModuleName(),
             $this->getName(),
             (string)$value
         );
@@ -66,13 +66,8 @@ abstract class Option
     public function resetValue()
     {
         COption::RemoveOption(
-            $this->getModuleName(),
+            Module::getModuleName(),
             $this->getName()
         );
-    }
-
-    protected function getModuleName(): string
-    {
-        return $this->modulename;
     }
 }

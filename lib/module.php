@@ -7,11 +7,9 @@ use Sprint\Options\Exception\OptionNotFoundException;
 
 class Module
 {
-    protected static $modulename = 'sprint.options';
-    /**
-     * @var Builder
-     */
-    protected static $configBuilder;
+    protected static string   $modulename    = 'sprint.options';
+    protected static ?Builder $configBuilder = null;
+    protected static array    $valuesCache   = [];
 
     protected static function getDocRoot(): string
     {
@@ -36,21 +34,21 @@ class Module
         }
     }
 
-    public static function getDbOption(string $name, $default = '')
+    /**
+     * @deprecated
+     */
+    public function getDbOption($name, $default = '')
     {
-        try {
-            return self::getConfigBuilder()->getOption($name)->getValue();
-        } catch (OptionNotFoundException $e) {
-            return $default;
+        if (isset(self::$valuesCache[$name])) {
+            return self::$valuesCache[$name];
         }
-    }
 
-    public static function setDbOption(string $name, $value)
-    {
         try {
-            self::getConfigBuilder()->getOption($name)->setValue($value);
+            self::$valuesCache[$name] = self::getConfigBuilder()->getOptionValue($name);
         } catch (OptionNotFoundException $e) {
         }
+
+        return $default;
     }
 
     public static function getConfigBuilder(): Builder
@@ -75,5 +73,10 @@ class Module
         }
 
         return self::$configBuilder;
+    }
+
+    public static function getModuleName(): string
+    {
+        return self::$modulename;
     }
 }

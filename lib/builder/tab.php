@@ -2,39 +2,75 @@
 
 namespace Sprint\Options\Builder;
 
+use Sprint\Options\Custom\SelectOption;
+use Sprint\Options\Custom\StringOption;
+use Sprint\Options\Custom\TextareaOption;
+
 class Tab
 {
-    private $fields = [];
-    private $params;
+    /**
+     * @var Option[]
+     */
+    private array  $options     = [];
+    private string $title       = 'title';
+    private string $description = '';
 
-    public function __construct(string $title, array $params)
+    public function addOption(string $name, array $params = []): Tab
     {
-        $this->params = array_merge([
-            'TITLE'       => '',
-            'DESCRIPTION' => '',
-        ], $params);
+        if (isset($params['OPTIONS'])) {
+            $this->options[] = (new SelectOption($name))
+                ->setOptions($params['OPTIONS'])
+                ->setWidth($params['WIDTH'] ?? '')
+                ->setTitle($params['TITLE'] ?? $name)
+                ->setDefault($params['DEFAULT'] ?? '');
+        } elseif (isset($params['HEIGHT'])) {
+            $this->options[] = (new TextareaOption($name))
+                ->setHeight($params['HEIGHT'])
+                ->setWidth($params['WIDTH'] ?? '')
+                ->setTitle($params['TITLE'] ?? $name)
+                ->setDefault($params['DEFAULT'] ?? '');
+        } else {
+            $this->options[] = (new StringOption($name))
+                ->setMulty($params['MULTI'] == 'Y')
+                ->setWidth($params['WIDTH'] ?? '')
+                ->setTitle($params['TITLE'] ?? $name)
+                ->setDefault($params['DEFAULT'] ?? '');
+        }
 
-        $this->params['TITLE'] = $title;
-    }
-
-    public function addField(string $name): Tab
-    {
-        $this->fields[] = $name;
         return $this;
     }
 
-    public function getFields(): array
+    public function addCustomOption(Option $option): Tab
     {
-        return $this->fields;
+        $this->options[] = $option;
+
+        return $this;
+    }
+
+    public function getOptions(): array
+    {
+        return $this->options;
     }
 
     public function getTitle(): string
     {
-        return $this->params['TITLE'];
+        return $this->title;
     }
 
     public function getDescription(): string
     {
-        return $this->params['DESCRIPTION'];
+        return $this->description;
+    }
+
+    public function setTitle(string $title): Tab
+    {
+        $this->title = $title;
+        return $this;
+    }
+
+    public function setDescription(string $description): Tab
+    {
+        $this->description = $description;
+        return $this;
     }
 }

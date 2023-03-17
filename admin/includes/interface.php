@@ -37,9 +37,7 @@ $tabControl1 = new CAdminTabControl("tabControl2", $builderPage->getTabControl()
     <?php $tabControl1->Begin(); ?>
     <?php foreach ($builderPage->getTabs() as $tab) { ?>
         <?php $tabControl1->BeginNextTab(); ?>
-        <?php foreach ($tab->getFields() as $optionName) {
-            $option = $builder->getOption($optionName);
-            ?>
+        <?php foreach ($tab->getOptions() as $option) {?>
             <tr id="tr_<?= $option->getName() ?>">
                 <td class="adm-detail-content-cell-l" style="width: 40%">
                     <?= $option->getTitle(); ?>:

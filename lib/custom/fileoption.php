@@ -5,6 +5,7 @@ namespace Sprint\Options\Custom;
 use CFile;
 use CIBlock;
 use Sprint\Options\Builder\Option;
+use Sprint\Options\Module;
 
 class FileOption extends Option
 {
@@ -117,7 +118,7 @@ class FileOption extends Option
         }
 
         $file = CIBlock::makeFileArray($data, $del, $descr);
-        $fileId = CFile::SaveFile($file, $this->getModuleName());
+        $fileId = CFile::SaveFile($file, Module::getModuleName());
 
         return is_numeric($fileId) ? $fileId : 0;
     }

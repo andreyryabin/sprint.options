@@ -2,9 +2,6 @@
 
 namespace Sprint\Options\Builder;
 
-use Sprint\Options\Custom\SelectOption;
-use Sprint\Options\Custom\StringOption;
-use Sprint\Options\Custom\TextareaOption;
 use Sprint\Options\Exception\OptionNotFoundException;
 use Sprint\Options\Exception\PageNotFoundException;
 
@@ -13,26 +10,20 @@ class Builder
     /**
      * @var Page[]
      */
-    private array $pages = [];
-    /**
-     * @var Option[]
-     */
-    private array $options = [];
-    private array $params;
+    private array  $pages      = [];
+    private string $title;
+    private string $parentMenu = 'global_menu_content';
+    private int    $sort       = 50;
+    private string $icon       = 'sys_menu_icon';
 
-    public function __construct(array $params = [])
+    public function __construct()
     {
-        $this->params = array_merge([
-            'TITLE'       => GetMessage('SPRINT_OPTIONS_DEFAULT_TITLE'),
-            'PARENT_MENU' => 'global_menu_content',
-            'SORT'        => 50,
-            'ICON'        => 'sys_menu_icon',
-        ], $params);
+        $this->title = GetMessage('SPRINT_OPTIONS_DEFAULT_TITLE');
     }
 
-    public function addPage(string $title, array $params = []): Builder
+    public function addPage(string $title): Builder
     {
-        $this->pages[] = new Page($title, $params);
+        $this->pages[] = (new Page())->setTitle($title);
         return $this;
     }
 
@@ -42,51 +33,32 @@ class Builder
         return $this;
     }
 
-    /**
-     * @param string $name
-     * @param array  $params
-     *
-     * @return $this
-     */
     public function addOption(string $name, array $params = []): Builder
     {
-        if (!isset($this->options[$name])) {
-            if (isset($params['OPTIONS'])) {
-                $this->options[$name] = (new SelectOption($name))
-                    ->setOptions($params['OPTIONS'])
-                    ->setWidth($params['WIDTH'] ?? '')
-                    ->setTitle($params['TITLE'] ?? $name)
-                    ->setDefault($params['DEFAULT'] ?? '');
-            } elseif (isset($params['HEIGHT'])) {
-                $this->options[$name] = (new TextareaOption($name))
-                    ->setHeight($params['HEIGHT'])
-                    ->setWidth($params['WIDTH'] ?? '')
-                    ->setTitle($params['TITLE'] ?? $name)
-                    ->setDefault($params['DEFAULT'] ?? '');
-            } else {
-                $this->options[$name] = (new StringOption($name))
-                    ->setMulty($params['MULTI'] == 'Y')
-                    ->setWidth($params['WIDTH'] ?? '')
-                    ->setTitle($params['TITLE'] ?? $name)
-                    ->setDefault($params['DEFAULT'] ?? '');
-            }
-            if (!empty($params['TAB'])) {
-                $this->getLastPage()->getTabByTitle($params['TAB'])->addField($name);
-            } else {
-                $this->getLastPage()->getLastTab()->addField($name);
-            }
+        if (!empty($params['TAB'])) {
+            $this->getLastPage()->getTabByTitle($params['TAB'])->addOption($name, $params);
+        } else {
+            $this->getLastPage()->getLastTab()->addOption($name, $params);
         }
         return $this;
     }
 
-    public function addCustom(Option $option): Builder
+    public function addCustomOption(Option $option): Builder
     {
-        $name = $option->getName();
+        $this->getLastPage()->getLastTab()->addCustomOption($option);
 
-        $this->options[$name] = $option;
+        return $this;
+    }
 
-        $this->getLastPage()->getLastTab()->addField($name);
+    public function addCustomPage(Page $page): Builder
+    {
+        $this->pages[] = $page;
+        return $this;
+    }
 
+    public function addCustomTab(Tab $tab): Builder
+    {
+        $this->getLastPage()->addCustomTab($tab);
         return $this;
     }
 
@@ -118,57 +90,46 @@ class Builder
 
     public function getTitle(): string
     {
-        return $this->params['TITLE'];
+        return $this->title;
     }
 
     public function setTitle(string $title): Builder
     {
-        $this->params['TITLE'] = $title;
+        $this->title = $title;
         return $this;
     }
 
-    public function getSort()
+    public function getSort(): int
     {
-        return $this->params['SORT'];
+        return $this->sort;
     }
 
     public function setSort(int $sort): Builder
     {
-        $this->params['SORT'] = $sort;
+        $this->sort = $sort;
         return $this;
     }
 
-    public function getParentMenu()
+    public function getParentMenu(): string
     {
-        return $this->params['PARENT_MENU'];
+        return $this->parentMenu;
     }
 
     public function setParentMenu(string $parentMenu): Builder
     {
-        $this->params['PARENT_MENU'] = $parentMenu;
+        $this->parentMenu = $parentMenu;
         return $this;
     }
 
     public function setIcon(string $icon): Builder
     {
-        $this->params['ICON'] = $icon;
+        $this->icon = $icon;
         return $this;
     }
 
-    public function getIcon()
+    public function getIcon(): string
     {
-        return $this->params['ICON'];
-    }
-
-    /**
-     * @throws OptionNotFoundException
-     */
-    public function getOption(string $name): Option
-    {
-        if (isset($this->options[$name])) {
-            return $this->options[$name];
-        }
-        throw new OptionNotFoundException();
+        return $this->icon;
     }
 
     /**
@@ -184,22 +145,22 @@ class Builder
         throw new PageNotFoundException();
     }
 
-    /**
-     * @return Option[]
-     */
-    public function getOptions(): array
-    {
-        return $this->options;
-    }
-
-    /**
-     * @throws OptionNotFoundException
-     */
     public function resetValuesOnPage(Page $page)
     {
         foreach ($page->getTabs() as $tab) {
-            foreach ($tab->getFields() as $optionName) {
-                $this->getOption($optionName)->resetValue();
+            foreach ($tab->getOptions() as $option) {
+                $option->resetValue();
+            }
+        }
+    }
+
+    public function setValuesOnPage(Page $page, array $postdata)
+    {
+        foreach ($page->getTabs() as $tab) {
+            foreach ($tab->getOptions() as $option) {
+                if (isset($postdata[$option->getName()])) {
+                    $option->setValue($postdata[$option->getName()]);
+                }
             }
         }
     }
@@ -207,14 +168,17 @@ class Builder
     /**
      * @throws OptionNotFoundException
      */
-    public function setValuesOnPage(Page $page, array $postdata)
+    public function getOptionValue($name)
     {
-        foreach ($page->getTabs() as $tab) {
-            foreach ($tab->getFields() as $optionName) {
-                if (isset($postdata[$optionName])) {
-                    $this->getOption($optionName)->setValue($postdata[$optionName]);
+        foreach ($this->getPages() as $page) {
+            foreach ($page->getTabs() as $tab) {
+                foreach ($tab->getOptions() as $option) {
+                    if ($option->getName() == $name) {
+                        return $option->getValue();
+                    }
                 }
             }
         }
+        throw new OptionNotFoundException("Option $name not found");
     }
 }

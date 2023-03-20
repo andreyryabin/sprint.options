@@ -37,14 +37,23 @@ $tabControl1 = new CAdminTabControl("tabControl2", $builderPage->getTabControl()
     <?php $tabControl1->Begin(); ?>
     <?php foreach ($builderPage->getTabs() as $tab) { ?>
         <?php $tabControl1->BeginNextTab(); ?>
-        <?php foreach ($tab->getOptions() as $option) {?>
+        <?php foreach ($tab->getOptions() as $option) { ?>
             <tr id="tr_<?= $option->getName() ?>">
-                <td class="adm-detail-content-cell-l" style="width: 40%">
-                    <?= $option->getTitle(); ?>:
-                </td>
-                <td class="adm-detail-content-cell-r" style="width: 60%">
-                    <?= $option->render(); ?>
-                </td>
+                <?php if ($option->isWide()) { ?>
+                    <td id="td_<?= $option->getName() ?>" colspan="2" class="adm-detail-content-cell-wide">
+                        <?= $option->render(); ?>
+                    </td>
+                <?php } else { ?>
+                    <td class="adm-detail-content-cell-l adm-detail-valign-top" style="width: 40%">
+                        <?php if ($option->getHint()) { ?>
+                            <img title="<?= $option->getHint() ?>" src="/bitrix/js/main/core/images/hint.gif" alt="hint">
+                        <?php } ?>
+                        <?= $option->getTitle(); ?>:
+                    </td>
+                    <td id="td_<?= $option->getName() ?>" class="adm-detail-content-cell-r" style="width: 60%">
+                        <?= $option->render(); ?>
+                    </td>
+                <?php } ?>
             </tr>
         <?php } ?>
     <?php } ?>

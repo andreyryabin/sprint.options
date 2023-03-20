@@ -2,7 +2,6 @@
 
 namespace Sprint\Options\Builder;
 
-use Sprint\Options\Exception\OptionNotFoundException;
 use Sprint\Options\Exception\PageNotFoundException;
 
 class Builder
@@ -163,22 +162,5 @@ class Builder
                 }
             }
         }
-    }
-
-    /**
-     * @throws OptionNotFoundException
-     */
-    public function getOptionValue($name)
-    {
-        foreach ($this->getPages() as $page) {
-            foreach ($page->getTabs() as $tab) {
-                foreach ($tab->getOptions() as $option) {
-                    if ($option->getName() == $name) {
-                        return $option->getValue();
-                    }
-                }
-            }
-        }
-        throw new OptionNotFoundException("Option $name not found");
     }
 }

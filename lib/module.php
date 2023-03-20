@@ -9,7 +9,7 @@ class Module
 {
     protected static string   $modulename    = 'sprint.options';
     protected static ?Builder $configBuilder = null;
-    protected static array    $valuesCache   = [];
+    protected static array    $optionsMap    = [];
 
     protected static function getDocRoot(): string
     {
@@ -35,21 +35,25 @@ class Module
     }
 
     /**
-     * @deprecated
+     * @throws OptionNotFoundException
      */
-    public function getDbOption($name, $default = '')
+    public static function getOptionValue($name)
     {
-        if (isset(self::$valuesCache[$name])) {
-            return self::$valuesCache[$name];
+        if (empty(self::$optionsMap)) {
+            self::$optionsMap = [];
+            foreach (self::getConfigBuilder()->getPages() as $page) {
+                foreach ($page->getTabs() as $tab) {
+                    foreach ($tab->getOptions() as $option) {
+                        self::$optionsMap[$option->getName()] = $option;
+                    }
+                }
+            }
         }
 
-        try {
-            self::$valuesCache[$name] = self::getConfigBuilder()->getOptionValue($name);
-        } catch (OptionNotFoundException $e) {
-            self::$valuesCache[$name] = $default;
+        if (isset(self::$optionsMap[$name])) {
+            return self::$optionsMap[$name]->getValue();
         }
-
-        return self::$valuesCache[$name];
+        throw new OptionNotFoundException("Option \"$name\" not found");
     }
 
     public static function getConfigBuilder(): Builder

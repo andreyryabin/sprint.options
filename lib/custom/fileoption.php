@@ -29,19 +29,7 @@ class FileOption extends Option
             }
         }
 
-        return \Bitrix\Main\UI\FileInput::createInstance([
-            "name"        => $name,
-            "id"          => $name . mt_rand(99, 99999),
-            "description" => $this->allowDescription,
-            "edit"        => $this->allowEdit,
-            "upload"      => true,
-            "allowUpload" => $this->allowUpload,
-            "medialib"    => true,
-            "fileDialog"  => true,
-            "cloud"       => false,
-            "delete"      => true,
-            "maxCount"    => $this->maxCount,
-        ])->show($value);
+        return $this->renderInput($name, $value);
     }
 
     public function setAllowFiles(int $maxCount = 0): FileOption
@@ -69,43 +57,52 @@ class FileOption extends Option
 
     public function setValue($value)
     {
-        $files = ($this->maxCount == 1) ? $this->converSimple() : $this->converMulti();
-        $files = array_filter($files);
+        if ($this->maxCount == 1) {
+            $fileId = $this->setValueFromRequest();
+            if (empty($fileId)) {
+                $this->resetValue();
+            }
+            parent::setValue($fileId);
+            return;
+        }
 
-        if (empty($files)) {
+        $fileIds = $this->setMultiValueFromRequest();
+        $fileIds = array_filter($fileIds);
+
+        if (empty($fileIds)) {
             $this->resetValue();
         }
 
-        parent::setValue(implode(',', $files));
+        parent::setValue(implode(',', $fileIds));
     }
 
-    protected function converMulti(): array
+    protected function setValueFromRequest(): int
     {
         $name = $this->getName();
-        $multidata = array_key_exists($name, $_FILES) ? $_FILES[$name] : $_REQUEST[$name];
-
-        $fileIds = [];
-        foreach ($multidata as $key => $data) {
-            $del = $_REQUEST[$name . '_del'][$key] === 'Y';
-            $descr = $_REQUEST[$name . '_descr'][$key] ?? '';
-
-            $fileIds[] = $this->saveFile($data, $del, $descr);
-        }
-        return $fileIds;
-    }
-
-    protected function converSimple(): array
-    {
-        $name = $this->getName();
-        $data = array_key_exists($name, $_FILES) ? $_FILES[$name] : $_REQUEST[$name];
+        $value = array_key_exists($name, $_FILES) ? $_FILES[$name] : $_REQUEST[$name];
 
         $del = $_REQUEST[$name . '_del'] === 'Y';
         $descr = $_REQUEST[$name . '_descr'] ?? '';
 
-        return [$this->saveFile($data, $del, $descr)];
+        return $this->saveFile($value, $del, $descr);
     }
 
-    protected function saveFile($data, $del, $descr)
+    protected function setMultiValueFromRequest(): array
+    {
+        $name = $this->getName();
+        $multiValue = array_key_exists($name, $_FILES) ? $_FILES[$name] : $_REQUEST[$name];
+
+        $fileIds = [];
+        foreach ($multiValue as $key => $value) {
+            $del = $_REQUEST[$name . '_del'][$key] === 'Y';
+            $descr = $_REQUEST[$name . '_descr'][$key] ?? '';
+
+            $fileIds[] = $this->saveFile($value, $del, $descr);
+        }
+        return $fileIds;
+    }
+
+    protected function saveFile($data, $del, $descr): int
     {
         if (is_numeric($data) && !$del) {
             CFile::UpdateDesc($data, $descr);
@@ -123,6 +120,23 @@ class FileOption extends Option
         return is_numeric($fileId) ? $fileId : 0;
     }
 
+    protected function renderInput($name, $value): string
+    {
+        return \Bitrix\Main\UI\FileInput::createInstance([
+            "name"        => $name,
+            "id"          => $name . mt_rand(99, 99999),
+            "description" => $this->allowDescription,
+            "edit"        => $this->allowEdit,
+            "upload"      => true,
+            "allowUpload" => $this->allowUpload,
+            "medialib"    => true,
+            "fileDialog"  => true,
+            "cloud"       => false,
+            "delete"      => true,
+            "maxCount"    => $this->maxCount,
+        ])->show($value);
+    }
+
     public function setAllowEdit(bool $allowEdit): FileOption
     {
         $this->allowEdit = $allowEdit;
@@ -133,5 +147,15 @@ class FileOption extends Option
     {
         $this->allowDescription = $allowDescription;
         return $this;
+    }
+
+    public function isAllowEdit(): bool
+    {
+        return $this->allowEdit;
+    }
+
+    public function isAllowDescription(): bool
+    {
+        return $this->allowDescription;
     }
 }

@@ -22,19 +22,22 @@ class Tab
                 ->setOptions($params['OPTIONS'])
                 ->setWidth($params['WIDTH'] ?? '')
                 ->setTitle($params['TITLE'] ?? $name)
-                ->setDefault($params['DEFAULT'] ?? '');
+                ->setDefault($params['DEFAULT'] ?? '')
+                ->setHint($params['HINT'] ?? '');
         } elseif (isset($params['HEIGHT'])) {
             $this->options[] = (new TextareaOption($name))
                 ->setHeight($params['HEIGHT'])
                 ->setWidth($params['WIDTH'] ?? '')
                 ->setTitle($params['TITLE'] ?? $name)
-                ->setDefault($params['DEFAULT'] ?? '');
+                ->setDefault($params['DEFAULT'] ?? '')
+                ->setHint($params['HINT'] ?? '');
         } else {
             $this->options[] = (new StringOption($name))
                 ->setMulty($params['MULTI'] == 'Y')
                 ->setWidth($params['WIDTH'] ?? '')
                 ->setTitle($params['TITLE'] ?? $name)
-                ->setDefault($params['DEFAULT'] ?? '');
+                ->setDefault($params['DEFAULT'] ?? '')
+                ->setHint($params['HINT'] ?? '');
         }
 
         return $this;

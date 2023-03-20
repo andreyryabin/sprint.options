@@ -9,6 +9,8 @@ abstract class Option
 {
     private string $name;
     private string $title = '';
+    private string $hint  = '';
+    private bool   $wide  = false;
     private        $default;
 
     public function __construct(string $name)
@@ -69,5 +71,32 @@ abstract class Option
             Module::getModuleName(),
             $this->getName()
         );
+    }
+
+    public function setHint(string $hint): Option
+    {
+        $this->hint = $hint;
+        return $this;
+    }
+
+    public function getHint(): string
+    {
+        return $this->hint;
+    }
+
+    public function isWide(): bool
+    {
+        return $this->wide;
+    }
+
+    /**
+     * @param bool $wide
+     *
+     * @return Option
+     */
+    public function setWide(bool $wide): Option
+    {
+        $this->wide = $wide;
+        return $this;
     }
 }

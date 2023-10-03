@@ -1,3 +1,5 @@
+[![Latest Stable Version](https://poser.pugx.org/andreyryabin/sprint.options/v/stable.svg)](https://packagist.org/packages/andreyryabin/sprint.options/)
+[![Total Downloads](https://img.shields.io/packagist/dt/andreyryabin/sprint.options.svg?style=flat)](https://packagist.org/packages/andreyryabin/sprint.options)
 # README #
 
 Скачайте код модуля через composer

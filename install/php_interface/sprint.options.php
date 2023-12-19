@@ -1,10 +1,12 @@
 <?php
 
 use Sprint\Options\Builder\Builder;
+use Sprint\Options\Custom\CheckboxOption;
 use Sprint\Options\Custom\FileOption;
 use Sprint\Options\Custom\SelectOption;
 use Sprint\Options\Custom\StringOption;
 use Sprint\Options\Custom\TextareaOption;
+use Sprint\Options\Custom\WysiwygOption;
 
 return (new Builder)
     ->setTitle('Настройки контента')
@@ -23,6 +25,11 @@ return (new Builder)
             ->setDefault('Адрес офиса')
             ->setWidth('400')
             ->setHeight('100')
+    )
+    ->addCustomOption(
+        (new WysiwygOption('DESCRIPTION'))
+            ->setTitle('Подробная информация о компании')
+            ->setHeight('300')
     )
     ->addTab('Общие')
     ->addCustomOption(
@@ -48,4 +55,8 @@ return (new Builder)
         (new FileOption('FILES'))
             ->setTitle('Документы')
             ->setAllowFiles(0)
+    )
+    ->addCustomOption(
+        (new CheckboxOption('SHOW_FILES'))
+            ->setTitle('Показывать документы')
     );

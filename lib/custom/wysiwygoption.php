@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Sprint\Options\Custom;
 
@@ -13,34 +13,34 @@ class WysiwygOption extends Option
 {
     private string $height = '100';
 
-    /**
-     * @return string
-     * @throws LoaderException
-     */
     public function render(): string
     {
-        if (!Loader::includeModule('fileman')) {
-            ShowError('Модуль "Управление структурой" не установлен');
-            return '';
+        try {
+            if (Loader::includeModule('fileman')) {
+                ob_start();
+
+                CFileMan::AddHTMLEditorFrame(
+                    $this->getName(),
+                    $this->getValue(),
+                    'html',
+                    'html',
+                    ['height' => $this->height]
+                );
+
+                return ob_get_clean();
+            }
+        } catch (LoaderException $e) {
+            return $this->showError($e->getMessage());
         }
 
-        ob_start();
-
-        CFileMan::AddHTMLEditorFrame(
-            $this->getName(),
-            $this->getValue(),
-            'html',
-            'html',
-            ['height' => $this->height]
-        );
-
-        return ob_get_clean();
+        return $this->showError(GetMessage('SPRINT_OPTIONS_ERR_FILEMAN'));
     }
 
-    /**
-     * @param string $height
-     * @return WysiwygOption
-     */
+    protected function showError($message): string
+    {
+        return '<span class="errortext">' . nl2br($message) . '</span>';
+    }
+
     public function setHeight(string $height): WysiwygOption
     {
         $this->height = $height;

@@ -10,5 +10,6 @@ Sprint\Options\Locale::loadLocale([
     "SPRINT_OPTIONS_DEFAULT_TAB_TITLE"  => "Общие",
     "SPRINT_OPTIONS_SAVE_BTN"           => "Сохранить",
     "SPRINT_OPTIONS_RESET_BTN"          => "Сбросить",
+    "SPRINT_OPTIONS_ERR_FILEMAN"        => "Модуль \"Управление структурой\" не установлен",
 ]);
 
